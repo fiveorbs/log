@@ -10,11 +10,15 @@ use Throwable;
 
 trait PreparesValue
 {
-    public function prepare(mixed $value): string
+    public function prepare(mixed $value, bool $includeTraceback, string $tracebackIndent = ''): string
     {
         return match (true) {
             // Exceptions must be first as they are Stringable
-            is_subclass_of($value, Throwable::class) => $this->getExceptionMessage($value),
+            is_subclass_of($value, Throwable::class) => $this->getExceptionMessage(
+                $value,
+                $includeTraceback,
+                $tracebackIndent
+            ),
             (is_scalar($value) || (is_object($value) && ($value instanceof Stringable))) => (string)$value,
             $value instanceof DateTimeInterface => $value->format('Y-m-d H:i:s T'),
             is_object($value) => '[Instance of ' . $value::class . ']',
@@ -24,12 +28,18 @@ trait PreparesValue
         };
     }
 
-    protected function getExceptionMessage(Throwable $exception): string
+    protected function getExceptionMessage(Throwable $exception, bool $includeTraceback, string $tracebackIndent): string
     {
         $message = $exception::class . ': ' . $exception->getMessage();
 
-        if ($this->includeTraceback) {
-            $message .= "\n" . $exception->getTraceAsString() . "\n";
+        if ($includeTraceback) {
+            $trace = $exception->getTraceAsString();
+
+            if ($tracebackIndent) {
+                $trace = implode($tracebackIndent . '#', explode('#', $trace));
+            }
+
+            $message .= "\n" . $trace . "\n";
         }
 
         return $message;

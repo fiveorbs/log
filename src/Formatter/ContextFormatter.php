@@ -6,7 +6,7 @@ namespace Conia\Error\Formatter;
 
 use Conia\Error\Formatter;
 
-class TemplateFormatter implements Formatter
+class ContextFormatter implements Formatter
 {
     use PreparesValue;
 
@@ -17,15 +17,15 @@ class TemplateFormatter implements Formatter
     public function format(string $message, ?array $context): string
     {
         if ($context) {
-            return $this->interpolate($message, $context);
+            return $message . ":\n" . $this->transform($context);
         }
 
         return $message;
     }
 
-    protected function interpolate(string $template, array $context): string
+    protected function transform(array $context): string
     {
-        $substitutes = [];
+        $result = '';
 
         /**
          * @psalm-suppress MixedAssignment
@@ -33,17 +33,9 @@ class TemplateFormatter implements Formatter
          * $value types are exhaustively checked
          */
         foreach ($context as $key => $value) {
-            $placeholder = '{' . $key . '}';
-
-            if (strpos($template, $placeholder) === false) {
-                continue;
-            }
-
-            $substitutes[$placeholder] = $this->prepare($value, $this->includeTraceback);
+            $result .= "  [{$key}] => " . $this->prepare($value, $this->includeTraceback, '      ') . "\n";
         }
 
-        $message = strtr($template, $substitutes);
-
-        return $message;
+        return $result;
     }
 }

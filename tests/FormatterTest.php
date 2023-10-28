@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Conia\Error\Tests;
 
+use Conia\Error\Formatter\ContextFormatter;
 use Conia\Error\Formatter\TemplateFormatter;
 use DateTime;
 use ErrorException;
@@ -13,7 +14,7 @@ use stdClass;
 
 class FormatterTest extends TestCase
 {
-    #[TestDox('Iterpolate context values into message template')]
+    #[TestDox('Format message with ContextFormatter')]
     public function testTemplateFormatter(): void
     {
         $template = 'String: {string}, Integer: {integer}, ' .
@@ -54,5 +55,44 @@ class FormatterTest extends TestCase
         $this->assertStringContainsString('String: Scream Bloody Gore', $output);
         $this->assertStringNotContainsString('#0', $output);
         $this->assertStringNotContainsString('FormatterTest->testTemplateFormatter', $output);
+    }
+
+    #[TestDox('Format message with ContextFormatter')]
+    public function testContextFormatter(): void
+    {
+        $context = [
+            'string' => 'Scream Bloody Gore',
+            'integer' => 13,
+            'float' => 73.23,
+            'datetime' => new DateTime('1987-05-25T13:31:23'),
+            'array' => [13, 23, 71],
+            'object' => new stdClass(),
+            'other' => stream_context_create(),
+            'null' => null,
+            'exception' => new ErrorException('The test exception'),
+        ];
+
+        $formatter = new ContextFormatter();
+        $output = $formatter->format('Error', $context);
+
+        $this->assertStringContainsString('[string] => Scream Bloody Gore', $output);
+        $this->assertStringContainsString('[integer] => 13', $output);
+        $this->assertStringContainsString('[float] => 73.23', $output);
+        $this->assertStringContainsString('[datetime] => 1987-05-25 13:31:23', $output);
+        $this->assertStringContainsString('[array] => [Array [13,23,71]]', $output);
+        $this->assertStringContainsString('[object] => [Instance of stdClass]', $output);
+        $this->assertStringContainsString('[other] => [resource (stream-context)]', $output);
+        $this->assertStringContainsString('[null] => [null]', $output);
+        $this->assertStringContainsString('[exception] => ErrorException: The test exception', $output);
+        // Check if traceback exists
+        $this->assertStringContainsString('#0', $output);
+        $this->assertStringContainsString('FormatterTest->testContextFormatter', $output);
+
+        $formatter = new ContextFormatter(includeTraceback: false);
+        $output = $formatter->format('Error', $context);
+
+        $this->assertStringContainsString('[string] => Scream Bloody Gore', $output);
+        $this->assertStringNotContainsString('#0', $output);
+        $this->assertStringNotContainsString('FormatterTest->testContextFormatter', $output);
     }
 }
