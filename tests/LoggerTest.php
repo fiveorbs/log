@@ -7,11 +7,13 @@ namespace Conia\Error\Tests;
 use Conia\Error\Logger;
 use DateTime;
 use Exception;
+use PHPUnit\Framework\Attributes\TestDox;
 use Psr\Log\InvalidArgumentException;
 use stdClass;
 
 class LoggerTest extends TestCase
 {
+    #[TestDox('Write to file')]
     public function testLoggerToFile(): void
     {
         $logger = new Logger(logfile: $this->logFile);
@@ -37,6 +39,7 @@ class LoggerTest extends TestCase
         $this->assertStringContainsString('] EMERGENCY: Terry', $output);
     }
 
+    #[TestDox('Write to PHP SAPI')]
     public function testLoggerToPhpSapi(): void
     {
         $logger = new Logger(logfile: $this->logFile);
@@ -56,6 +59,7 @@ class LoggerTest extends TestCase
         $this->assertStringContainsString('] ALERT: Kelly', $output);
     }
 
+    #[TestDox('Respect higher debug level')]
     public function testLoggerWithHigherDebugLevel(): void
     {
         $logger = new Logger(Logger::ERROR, $this->logFile);
@@ -81,6 +85,7 @@ class LoggerTest extends TestCase
         $this->assertStringContainsString('] EMERGENCY: Terry', $output);
     }
 
+    #[TestDox('Fail with PSR-3 error on unknown log level ')]
     public function testLoggerWithWrongLogLevel(): void
     {
         $this->throws(InvalidArgumentException::class, 'Unknown log level');
@@ -89,6 +94,7 @@ class LoggerTest extends TestCase
         $logger->log(1313, 'never logged');
     }
 
+    #[TestDox('Iterpolate context values into message template')]
     public function testMessageInterpolation(): void
     {
         $logger = new Logger(logfile: $this->logFile);
