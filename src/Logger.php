@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Conia\Error;
 
-use DateTimeInterface;
+use Conia\Error\Formatter\MessageFormatter;
 use Psr\Log\InvalidArgumentException;
 use Psr\Log\LoggerInterface as PsrLogger;
 use Stringable;
-use Throwable;
 
 /** @psalm-api */
 class Logger implements PsrLogger
@@ -26,9 +25,14 @@ class Logger implements PsrLogger
     protected array $levelLabels;
 
     public function __construct(
-        protected int $minimumLevel = self::DEBUG,
         protected ?string $logfile = null,
+        protected ?Formatter $formatter = null,
+        protected int $minimumLevel = self::DEBUG,
     ) {
+        if (!$formatter) {
+            $this->formatter = new MessageFormatter();
+        }
+
         $this->levelLabels = [
             self::DEBUG => 'DEBUG',
             self::INFO => 'INFO',
@@ -39,6 +43,19 @@ class Logger implements PsrLogger
             self::ALERT => 'ALERT',
             self::EMERGENCY => 'EMERGENCY',
         ];
+    }
+
+    public function formatter(Formatter $formatter): void
+    {
+        $this->formatter = $formatter;
+    }
+
+    public function withFormatter(Formatter $formatter): self
+    {
+        $new = clone $this;
+        $new->formatter($formatter);
+
+        return $new;
     }
 
     public function log(
@@ -60,7 +77,7 @@ class Logger implements PsrLogger
             throw new InvalidArgumentException('Unknown log level: ' . (string)$level);
         }
 
-        $message = $this->interpolate(str_replace("\0", '', $message), $context);
+        $message = $this->formatter->format(str_replace("\0", '', $message), $context);
         $time = date('Y-m-d H:i:s D T');
         $line = "[{$time}] {$levelLabel}: {$message}";
 
@@ -109,52 +126,5 @@ class Logger implements PsrLogger
     public function emergency(string|Stringable $message, array $context = []): void
     {
         $this->log(self::EMERGENCY, $message, $context);
-    }
-
-    protected function interpolate(string $template, array $context): string
-    {
-        $substitutes = [];
-
-        /**
-         * @psalm-suppress MixedAssignment
-         *
-         * $value types are exhaustively checked
-         */
-        foreach ($context as $key => $value) {
-            $placeholder = '{' . $key . '}';
-
-            if (strpos($template, $placeholder) === false) {
-                continue;
-            }
-
-            $substitutes[$placeholder] = match (true) {
-                (is_scalar($value) || (is_object($value) && method_exists($value, '__toString'))) => (string)$value,
-                $value instanceof DateTimeInterface => $value->format('Y-m-d H:i:s T'),
-                is_object($value) => '[Instance of ' . $value::class . ']',
-                is_array($value) => '[Array ' . json_encode($value, JSON_UNESCAPED_SLASHES) . ']',
-                is_null($value) => '[null]',
-                default => '[' . get_debug_type($value) . ']',
-            };
-        }
-
-        $message = strtr($template, $substitutes);
-        $message .= $this->getExceptionMessage($context);
-
-        return $message;
-    }
-
-    protected function getExceptionMessage(array $context): string
-    {
-        $message = '';
-
-        if (
-            array_key_exists('exception', $context)
-            && $context['exception'] instanceof Throwable
-        ) {
-            $message .= "\n    Exception Message: " . $context['exception']->getMessage() . "\n\n";
-            $message .= implode('    #', explode('#', $context['exception']->getTraceAsString()));
-        }
-
-        return $message;
     }
 }

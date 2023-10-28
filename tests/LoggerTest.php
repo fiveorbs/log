@@ -4,19 +4,17 @@ declare(strict_types=1);
 
 namespace Conia\Error\Tests;
 
+use Conia\Error\Formatter\TemplateFormatter;
 use Conia\Error\Logger;
-use DateTime;
-use Exception;
 use PHPUnit\Framework\Attributes\TestDox;
 use Psr\Log\InvalidArgumentException;
-use stdClass;
 
 class LoggerTest extends TestCase
 {
     #[TestDox('Write to file')]
     public function testLoggerToFile(): void
     {
-        $logger = new Logger(logfile: $this->logFile);
+        $logger = new Logger($this->logFile);
 
         $logger->debug('Scott');
         $logger->info('Steve');
@@ -62,7 +60,7 @@ class LoggerTest extends TestCase
     #[TestDox('Respect higher debug level')]
     public function testLoggerWithHigherDebugLevel(): void
     {
-        $logger = new Logger(Logger::ERROR, $this->logFile);
+        $logger = new Logger($this->logFile, minimumLevel: Logger::ERROR);
 
         $logger->debug('Scott');
         $logger->info('Steve');
@@ -90,43 +88,61 @@ class LoggerTest extends TestCase
     {
         $this->throws(InvalidArgumentException::class, 'Unknown log level');
 
-        $logger = new Logger(Logger::ERROR, $this->logFile);
+        $logger = new Logger($this->logFile, minimumLevel: Logger::ERROR);
         $logger->log(1313, 'never logged');
     }
 
-    #[TestDox('Iterpolate context values into message template')]
-    public function testMessageInterpolation(): void
+    #[TestDox('Format message with TemplateFormatter')]
+    public function testFormatMessage(): void
     {
-        $logger = new Logger(logfile: $this->logFile);
+        $logger = new Logger(logfile: $this->logFile, formatter: new TemplateFormatter());
 
-        $logger->warning(
-            'String: {string}, Integer: {integer}, ' .
-                'DateTime: {datetime}, Array: {array}' .
-                'Float: {float}, Object: {object} ' .
-                'Other: {other}, Null: {null}',
-            [
-                'string' => 'Scream Bloody Gore',
-                'integer' => 13,
-                'float' => 73.23,
-                'datetime' => new DateTime('1987-05-25T13:31:23'),
-                'array' => [13, 23, 71],
-                'object' => new stdClass(),
-                'other' => stream_context_create(),
-                'null' => null,
-                'exception' => new Exception('The test exception'),
-            ]
-        );
+        $logger->emergency('Template {string}', ['string' => 'Formatted']);
 
         $output = file_get_contents($this->logFile);
 
-        $this->assertStringContainsString('String: Scream Bloody Gore', $output);
-        $this->assertStringContainsString('Integer: 13', $output);
-        $this->assertStringContainsString('Float: 73.23', $output);
-        $this->assertStringContainsString('DateTime: 1987-05-25 13:31:23', $output);
-        $this->assertStringContainsString('Array: [Array [13,23,71]]', $output);
-        $this->assertStringContainsString('Object: [Instance of stdClass]', $output);
-        $this->assertStringContainsString('Other: [resource (stream-context)]', $output);
-        $this->assertStringContainsString('Null: [null]', $output);
-        $this->assertStringContainsString('Exception Message: The test exception', $output);
+        $this->assertStringContainsString('] EMERGENCY: Template Formatted', $output);
+    }
+
+    #[TestDox('Format message with different formatters')]
+    public function testFormatMessageAfterSettingFormatter(): void
+    {
+        $logger = new Logger(logfile: $this->logFile);
+
+        $logger->alert('Template {string}', ['string' => 'Formatted']);
+
+        $output = file_get_contents($this->logFile);
+
+        $this->assertStringContainsString('] ALERT: Template {string}', $output);
+        $this->assertStringNotContainsString('] ALERT: Template Formatted', $output);
+
+        $logger->formatter(new TemplateFormatter());
+        $logger->alert('Template {string}', ['string' => 'Formatted']);
+
+        $output = file_get_contents($this->logFile);
+
+        $this->assertStringContainsString('] ALERT: Template Formatted', $output);
+    }
+
+    #[TestDox('Format message with cloned loggers')]
+    public function testFormatMessageAfterCloningLogger(): void
+    {
+        $logger = new Logger(logfile: $this->logFile);
+
+        $logger->alert('Template {string}', ['string' => 'Formatted']);
+
+        $output = file_get_contents($this->logFile);
+
+        $this->assertStringContainsString('] ALERT: Template {string}', $output);
+        $this->assertStringNotContainsString('] ALERT: Template Formatted', $output);
+
+        $newLogger = $logger->withFormatter(new TemplateFormatter());
+        $newLogger->alert('New Logger {string}', ['string' => 'Formatted']);
+        $logger->alert('Old Logger {string}', ['string' => 'Formatted']);
+
+        $output = file_get_contents($this->logFile);
+
+        $this->assertStringContainsString('] ALERT: New Logger Formatted', $output);
+        $this->assertStringContainsString('] ALERT: Old Logger {string}', $output);
     }
 }
