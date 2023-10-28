@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Conia\Error\Tests;
 
 use Conia\Error\Formatter\ContextFormatter;
+use Conia\Error\Formatter\MessageFormatter;
 use Conia\Error\Formatter\TemplateFormatter;
 use DateTime;
 use ErrorException;
@@ -14,6 +15,19 @@ use stdClass;
 
 class FormatterTest extends TestCase
 {
+    #[TestDox('Format message with MessageFormatter')]
+    public function testMessageFormatter(): void
+    {
+        $formatter = new MessageFormatter();
+        $output = $formatter->format('Message', null);
+
+        $this->assertEquals('Message', $output);
+
+        $output = $formatter->format('Message', ['test' => 'context']);
+
+        $this->assertEquals('Message', $output);
+    }
+
     #[TestDox('Format message with ContextFormatter')]
     public function testTemplateFormatter(): void
     {
