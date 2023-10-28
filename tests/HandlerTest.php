@@ -137,4 +137,32 @@ class HandlerTest extends TestCase
 
         $this->assertStringContainsString('rendered without request division by zero', $output);
     }
+
+    #[TestDox("Render error while using a logger")]
+    public function testRenderErrorWithLogger(): void
+    {
+        $logger = new Logger(logfile: $this->logFile);
+        $handler = new Handler($this->factory, $this->factory, $logger);
+        $handler->render(ErrorException::class, new TestRenderer())->log(Logger::ALERT);
+        $response = $handler->getResponse(new ErrorException('test message'), $this->request());
+        $output = file_get_contents($this->logFile);
+
+        $this->assertEquals('rendered GET test message', (string)$response->getBody());
+        $this->assertStringContainsString('ALERT: Uncaught Exception', $output);
+
+    }
+
+    #[TestDox("Render error while using a logger but no log level set")]
+    public function testRenderErrorWithLoggerNoLevel(): void
+    {
+        $logger = new Logger(logfile: $this->logFile);
+        $handler = new Handler($this->factory, $this->factory, $logger);
+        $handler->render(ErrorException::class, new TestRenderer());
+        $response = $handler->getResponse(new ErrorException('test message'), $this->request());
+        $output = file_get_contents($this->logFile);
+
+        $this->assertEquals('rendered GET test message', (string)$response->getBody());
+        $this->assertEquals('', $output);
+
+    }
 }

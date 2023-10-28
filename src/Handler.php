@@ -47,9 +47,12 @@ class Handler implements Middleware
     /**
      * @param class-string<Throwable>|class-string<Throwable>[] $exceptions
      */
-    public function render(string|array $exceptions, Renderer $renderer): void
+    public function render(string|array $exceptions, Renderer $renderer): RendererEntry
     {
-        $this->renderers[] = new RendererEntry(is_string($exceptions) ? [$exceptions] : $exceptions, $renderer);
+        $renderEntry = new RendererEntry(is_string($exceptions) ? [$exceptions] : $exceptions, $renderer);
+        $this->renderers[] = $renderEntry;
+
+        return $renderEntry;
     }
 
     public function handleError(
@@ -67,7 +70,6 @@ class Handler implements Middleware
 
     public function emitException(Throwable $exception): void
     {
-        $this->log($exception);
         $response = $this->getResponse($exception, null);
 
         echo (string)$response->getBody();
@@ -76,11 +78,18 @@ class Handler implements Middleware
     public function getResponse(Throwable $exception, ?Request $request): Response
     {
         $renderer = null;
+        $logLevel = null;
 
         foreach ($this->renderers as $rendererEntry) {
             if ($rendererEntry->matches($exception)) {
                 $renderer = $rendererEntry->renderer;
+                $logLevel = $rendererEntry->getLogLevel();
+                break;
             }
+        }
+
+        if (!is_null($logLevel)) {
+            $this->log($logLevel, $exception);
         }
 
         if ($renderer) {
@@ -96,10 +105,10 @@ class Handler implements Middleware
             ->withBody($this->streamFactory->createStream('<h1>500 Internal Server Error</h1>'));
     }
 
-    public function log(Throwable $exception): void
+    public function log(string|int $logLevel, Throwable $exception): void
     {
         if ($this->logger) {
-            $this->logger->error('Uncaught Exception:', ['exception' => $exception]);
+            $this->logger->log($logLevel, 'Uncaught Exception:', ['exception' => $exception]);
         }
     }
 }

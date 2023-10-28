@@ -39,10 +39,10 @@ class LoggerTest extends TestCase
         $this->assertStringContainsString('] EMERGENCY: Terry', $output);
     }
 
-    #[TestDox('Write to PHP SAPI')]
-    public function testLoggerToPhpSapi(): void
+    #[TestDox('Write to PHP default destination')]
+    public function testLoggerToPhpDefaultDestination(): void
     {
-        $logger = new Logger(logfile: $this->logFile);
+        $logger = new Logger();
 
         $logger->debug('Scott');
         $logger->info('Steve');

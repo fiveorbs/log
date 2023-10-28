@@ -61,17 +61,13 @@ class Logger implements PsrLogger
         }
 
         $message = $this->interpolate(str_replace("\0", '', $message), $context);
+        $time = date('Y-m-d H:i:s D T');
+        $line = "[{$time}] {$levelLabel}: {$message}";
 
         if (is_string($this->logfile)) {
-            $time = date('Y-m-d H:i:s D T');
-            error_log("[{$time}] {$levelLabel}: {$message}", 3, $this->logfile);
-
-            if (PHP_SAPI == 'cli') {
-                // print it additionally to stderr
-                error_log("{$levelLabel}: {$message}");
-            }
+            error_log($line, 3, $this->logfile);
         } else {
-            error_log("{$levelLabel}: {$message}");
+            error_log($line);
         }
     }
 

@@ -8,6 +8,8 @@ use Throwable;
 
 class RendererEntry
 {
+    private string|int|null $logLevel = null;
+
     /**
      * @param class-string<Throwable>[] $exceptions
      */
@@ -30,5 +32,15 @@ class RendererEntry
         }
 
         return false;
+    }
+
+    public function log(string|int $logLevel): void
+    {
+        $this->logLevel = $logLevel;
+    }
+
+    public function getLogLevel(): string|int|null
+    {
+        return $this->logLevel;
     }
 }
