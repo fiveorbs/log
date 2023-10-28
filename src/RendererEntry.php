@@ -8,6 +8,9 @@ use Throwable;
 
 class RendererEntry
 {
+    /**
+     * @param class-string<Throwable>[] $exceptions
+     */
     public function __construct(
         public readonly array $exceptions,
         public readonly Renderer $renderer

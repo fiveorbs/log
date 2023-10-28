@@ -18,7 +18,7 @@ use Throwable;
 /** @psalm-api */
 class Handler implements Middleware
 {
-    /** @property Renderer[] */
+    /** @var RendererEntry[] */
     protected array $renderers = [];
 
     public function __construct(
@@ -45,6 +45,9 @@ class Handler implements Middleware
         }
     }
 
+    /**
+     * @param class-string<Throwable>|class-string<Throwable>[] $exceptions
+     */
     public function render(string|array $exceptions, Renderer $renderer): void
     {
         $this->renderers[] = new RendererEntry(is_string($exceptions) ? [$exceptions] : $exceptions, $renderer);
