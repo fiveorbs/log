@@ -45,6 +45,7 @@ class FormatterTest extends TestCase
             'other' => stream_context_create(),
             'null' => null,
             'exception' => new ErrorException('The test exception'),
+            'missing' => 'should not be rendered',
         ];
 
         $formatter = new TemplateFormatter();
@@ -59,9 +60,13 @@ class FormatterTest extends TestCase
         $this->assertStringContainsString('Other: [resource (stream-context)]', $output);
         $this->assertStringContainsString('Null: [null]', $output);
         $this->assertStringContainsString('ErrorException: The test exception', $output);
+        $this->assertStringNotContainsString('should not be rendered', $output);
         // Check if traceback exists
         $this->assertStringContainsString('#0', $output);
         $this->assertStringContainsString('FormatterTest->testTemplateFormatter', $output);
+
+        $output = $formatter->format('Error', null);
+        $this->assertEquals('Error', $output);
 
         $formatter = new TemplateFormatter(includeTraceback: false);
         $output = $formatter->format($template, $context);
@@ -101,6 +106,9 @@ class FormatterTest extends TestCase
         // Check if traceback exists
         $this->assertStringContainsString('#0', $output);
         $this->assertStringContainsString('FormatterTest->testContextFormatter', $output);
+
+        $output = $formatter->format('Error', null);
+        $this->assertEquals('Error', $output);
 
         $formatter = new ContextFormatter(includeTraceback: false);
         $output = $formatter->format('Error', $context);
