@@ -22,7 +22,8 @@
     "require": {
         "psr/http-message": "^2.0",
         "psr/http-server-handler": "^1.0",
-        "psr/http-server-middleware": "^1.0"
+        "psr/http-server-middleware": "^1.0",
+        "psr/http-factory": "^1.0"
     },
     "require-dev": {
         "conia/development": "^1.0",
