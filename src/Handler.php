@@ -18,6 +18,9 @@ use Throwable;
 /** @psalm-api */
 class Handler implements Middleware
 {
+    /** @property Renderer[] */
+    protected array $renderers = [];
+
     public function __construct(
         protected readonly ResponseFactory $responseFactory,
         protected readonly StreamFactory $streamFactory,
@@ -40,6 +43,11 @@ class Handler implements Middleware
         } catch (Throwable $e) {
             return $this->getResponse($e, $request);
         }
+    }
+
+    public function render(string|array $exceptions, Renderer $renderer): void
+    {
+        $this->renderers[] = new RendererEntry(is_string($exceptions) ? [$exceptions] : $exceptions, $renderer);
     }
 
     public function handleError(
@@ -65,15 +73,25 @@ class Handler implements Middleware
 
     public function getResponse(Throwable $exception, ?Request $request): Response
     {
-        $response = $this->responseFactory->createResponse(404)
-            ->withBody($this->render($exception, $request));
+        $renderer = null;
 
-        return $response;
-    }
+        foreach ($this->renderers as $rendererEntry) {
+            if ($rendererEntry->matches($exception)) {
+                $renderer = $rendererEntry->renderer;
+            }
+        }
 
-    public function render(Throwable $exception, ?Request $request): Stream
-    {
-        return $this->streamFactory->createStream($exception->getMessage());
+        if ($renderer) {
+            return $renderer->render(
+                $exception,
+                $this->responseFactory->createResponse()->withBody($this->streamFactory->createStream('')),
+                $request
+            );
+        }
+
+        return $this->responseFactory->createResponse(500)
+            ->withHeader('Content-Type', 'text/html')
+            ->withBody($this->streamFactory->createStream('<h1>500 Internal Server Error</h1>'));
     }
 
     public function log(Throwable $exception): void

@@ -5,105 +5,125 @@ declare(strict_types=1);
 namespace Conia\Error\Tests;
 
 use Conia\Error\Handler;
+use Conia\Error\Tests\Fixtures\TestRenderer;
+use DivisionByZeroError;
 use ErrorException;
+use Exception;
 use PHPUnit\Framework\Attributes\TestDox;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
+use Throwable;
 
 class HandlerTest extends TestCase
 {
     #[TestDox("Don't handle error level 0")]
     public function testErrorHandlerI(): void
     {
-        $err = new Handler($this->factory, $this->factory);
+        $handler = new Handler($this->factory, $this->factory);
 
-        $this->assertEquals(false, $err->handleError(0, 'Handler Test'));
+        $this->assertEquals(false, $handler->handleError(0, 'Handler Test'));
     }
 
-    public function testErrorHandlerII(): void
+    #[TestDox("Throw ErrorException when error_reporting level is matched")]
+    public function testThrowErrorException(): void
     {
         $this->throws(ErrorException::class, 'Handler Test');
 
-        $err = new Handler($this->factory, $this->factory);
-        $err->handleError(E_WARNING, 'Handler Test');
+        $handler = new Handler($this->factory, $this->factory);
+        $handler->handleError(E_WARNING, 'Handler Test');
     }
 
-    #[TestDox("Don't handle error level 0")]
-    public function testHTTPErrorResponses(): void
+    #[TestDox("Render error without request")]
+    public function testRenderErrorWithoutRequest(): void
     {
-        $err = new Handler($this->factory, $this->factory);
+        $handler = new Handler($this->factory, $this->factory);
+        $handler->render(ErrorException::class, new TestRenderer());
+        $response = $handler->getResponse(new ErrorException('test message'), null);
 
-        // $response = $err->getResponse(new HttpBadRequest(), $this->request());
-        // $this->assertStringContainsString('<h1>400 Bad Request</h1>', (string)$response->psr()->getBody());
-        //
-        // $response = $err->getResponse(new HttpUnauthorized(), $this->request());
-        // $this->assertStringContainsString('<h1>401 Unauthorized</h1>', (string)$response->psr()->getBody());
-        //
-        // $response = $err->getResponse(new HttpForbidden(), $this->request());
-        // $this->assertStringContainsString('<h1>403 Forbidden</h1>', (string)$response->psr()->getBody());
-        //
-        // $response = $err->getResponse(new HttpNotFound(), $this->request());
-        // $this->assertStringContainsString('<h1>404 Not Found</h1>', (string)$response->psr()->getBody());
-        //
-        // $response = $err->getResponse(new HttpMethodNotAllowed(), $this->request());
-        // $this->assertStringContainsString('<h1>405 Method Not Allowed</h1>', (string)$response->psr()->getBody());
-        //
-        // $response = $err->getResponse(new Exception(), $this->request());
-        // $this->assertStringContainsString('<h1>500 Internal Server Error</h1>', (string)$response->psr()->getBody());
+        $this->assertEquals('rendered without request test message', (string)$response->getBody());
     }
 
-    public function testResponseWithTextPlain(): void
+    #[TestDox('Add renderer exceptions as array')]
+    public function testAddExceptionsAsArray(): void
     {
-        $_SERVER['HTTP_ACCEPT'] = 'text/plain';
-        $err = new Handler($this->factory, $this->factory);
+        $handler = new Handler($this->factory, $this->factory);
+        $handler->render([ErrorException::class], new TestRenderer());
+        $response = $handler->getResponse(new ErrorException('test message'), null);
 
-        // $response = $err->getResponse(new HttpBadRequest(), $this->request());
-        // $this->assertEquals('Error: 400 Bad Request', (string)$response->psr()->getBody());
+        $this->assertEquals('rendered without request test message', (string)$response->getBody());
     }
 
-    public function testResponseWithApplicationJson(): void
+    #[TestDox("Render error with request")]
+    public function testRenderErrorWithRequest(): void
     {
-        $_SERVER['HTTP_ACCEPT'] = 'application/json';
-        $err = new Handler($this->factory, $this->factory);
+        $handler = new Handler($this->factory, $this->factory);
+        $handler->render(ErrorException::class, new TestRenderer());
+        $response = $handler->getResponse(new ErrorException('test message'), $this->request());
 
-        // $response = $err->getResponse(new HttpBadRequest(), $this->request());
-        // $error = json_decode((string)$response->psr()->getBody());
-        //
-        // $this->assertEquals('400 Bad Request', $error->error);
-        // $this->assertEquals('Bad Request', $error->description);
-        // $this->assertStringContainsString('#0', $error->traceback);
-        // $this->assertEquals(400, $error->code);
-        // $this->assertEquals(null, $error->payload);
+        $this->assertEquals('rendered GET test message', (string)$response->getBody());
     }
 
+    #[TestDox("Render error fallback")]
+    public function testRenderErrorFallback(): void
+    {
+        $handler = new Handler($this->factory, $this->factory);
+        $response = $handler->getResponse(new ErrorException('test message'), $this->request());
+
+        $this->assertEquals('<h1>500 Internal Server Error</h1>', (string)$response->getBody());
+        $this->assertEquals('text/html', (string)$response->getHeaderLine('content-type'));
+        $this->assertEquals(500, (string)$response->getStatusCode());
+    }
+
+    #[TestDox('Handle exception subclasses')]
     public function testResponseWithPHPExceptions(): void
     {
-        $err = new Handler($this->factory, $this->factory);
-        // $response = $err->getResponse(new DivisionByZeroError('Division by zero'), $this->request());
-        //
-        // $this->assertStringContainsString('<h1>500 Internal Server Error</h1>', (string)$response->psr()->getBody());
+        $handler = new Handler($this->factory, $this->factory);
+        $handler->render(Throwable::class, new TestRenderer());
+        $response = $handler->getResponse(new ErrorException('test message'), null);
+
+        $this->assertEquals('rendered without request test message', (string)$response->getBody());
     }
 
-    // public function testHandledByMiddleware(): void
-    // {
-    //     $app = App::create();
-    //     $app->route('/', fn () => '');
-    //     ob_start();
-    //     $response = $app->run();
-    //     ob_end_clean();
-    //
-    //     $this->assertStringContainsString('<title>500 Internal Server Error</title>', (string)$response->getBody());
-    //     $this->assertStringContainsString('<h1>500 Internal Server Error</h1>', (string)$response->getBody());
-    // }
+    #[TestDox('Handled by PSR-15 middleware')]
+    public function testHandledByMiddleware(): void
+    {
+        $handler = new Handler($this->factory, $this->factory);
+        $handler->render(Throwable::class, new TestRenderer());
+        $response = $handler->process($this->request(), new class () implements RequestHandler {
+            public function handle(Request $request): Response
+            {
+                throw new Exception('test message middleware');
+            }
+        });
 
+        $this->assertEquals('rendered GET test message middleware', (string)$response->getBody());
+    }
+
+    #[TestDox('Emit PHP exception unrelated to middleware')]
     public function testEmitPHPExceptions(): void
     {
-        $err = new Handler($this->factory, $this->factory);
+        $handler = new Handler($this->factory, $this->factory);
 
         ob_start();
-        $err->emitException(new DivisionByZeroError('Division by zero'));
+        $handler->emitException(new DivisionByZeroError('division by zero'));
         $output = ob_get_contents();
         ob_end_clean();
 
-        $this->assertStringContainsString('<title>500 Internal Server Error</title>', $output);
         $this->assertStringContainsString('<h1>500 Internal Server Error</h1>', $output);
+    }
+
+    #[TestDox('Emit PHP exception unrelated to middleware with renderer')]
+    public function testEmitPHPExceptionsWithRenderer(): void
+    {
+        $handler = new Handler($this->factory, $this->factory);
+        $handler->render(Throwable::class, new TestRenderer());
+
+        ob_start();
+        $handler->emitException(new DivisionByZeroError('division by zero'));
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertStringContainsString('rendered without request division by zero', $output);
     }
 }
