@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Conia\Error\Tests;
 
 use Conia\Error\Handler;
+use Conia\Error\Logger;
 use Conia\Error\Tests\Fixtures\TestRenderer;
 use DivisionByZeroError;
 use ErrorException;
@@ -42,6 +43,16 @@ class HandlerTest extends TestCase
         $response = $handler->getResponse(new ErrorException('test message'), null);
 
         $this->assertEquals('rendered without request test message', (string)$response->getBody());
+    }
+
+    #[TestDox("Render error when no matching exception exists")]
+    public function testRenderErrorNotMatching(): void
+    {
+        $handler = new Handler($this->factory, $this->factory);
+        $handler->render(ErrorException::class, new TestRenderer());
+        $response = $handler->getResponse(new Exception('test message'), null);
+
+        $this->assertEquals('<h1>500 Internal Server Error</h1>', (string)$response->getBody());
     }
 
     #[TestDox('Add renderer exceptions as array')]
