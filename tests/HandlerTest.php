@@ -138,22 +138,22 @@ class HandlerTest extends TestCase
         $this->assertStringContainsString('rendered without request division by zero', $output);
     }
 
-    #[TestDox("Render error while using a logger")]
-    public function testRenderErrorWithLogger(): void
+    #[TestDox("Render matched error while using a logger")]
+    public function testRenderMatchedErrorWithLogger(): void
     {
         $logger = new Logger(logfile: $this->logFile);
         $handler = new Handler($this->factory, $this->factory, $logger);
-        $handler->render(ErrorException::class, new TestRenderer())->log(Logger::ALERT);
+        $handler->render(ErrorException::class, new TestRenderer())->log(Logger::CRITICAL);
         $response = $handler->getResponse(new ErrorException('test message'), $this->request());
         $output = file_get_contents($this->logFile);
 
         $this->assertEquals('rendered GET test message', (string)$response->getBody());
-        $this->assertStringContainsString('ALERT: Uncaught Exception', $output);
+        $this->assertStringContainsString('CRITICAL: Matched Exception', $output);
 
     }
 
-    #[TestDox("Render error while using a logger but no log level set")]
-    public function testRenderErrorWithLoggerNoLevel(): void
+    #[TestDox("Render matched error while using a logger but no log level set")]
+    public function testRenderMatchedErrorWithLoggerNoLevel(): void
     {
         $logger = new Logger(logfile: $this->logFile);
         $handler = new Handler($this->factory, $this->factory, $logger);
@@ -163,6 +163,19 @@ class HandlerTest extends TestCase
 
         $this->assertEquals('rendered GET test message', (string)$response->getBody());
         $this->assertEquals('', $output);
+
+    }
+
+    #[TestDox("Render unmatched error while using a logger")]
+    public function testRenderUnmatchedErrorWithLogger(): void
+    {
+        $logger = new Logger(logfile: $this->logFile);
+        $handler = new Handler($this->factory, $this->factory, $logger);
+        $response = $handler->getResponse(new ErrorException('test message'), $this->request());
+        $output = file_get_contents($this->logFile);
+
+        $this->assertEquals('<h1>500 Internal Server Error</h1>', (string)$response->getBody());
+        $this->assertStringContainsString('ALERT: Unmatched Exception', $output);
 
     }
 }

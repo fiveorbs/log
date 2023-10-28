@@ -113,7 +113,7 @@ class Logger implements PsrLogger
 
     protected function interpolate(string $template, array $context): string
     {
-        $substitudes = [];
+        $substitutes = [];
 
         /**
          * @psalm-suppress MixedAssignment
@@ -127,7 +127,7 @@ class Logger implements PsrLogger
                 continue;
             }
 
-            $substitudes[$placeholder] = match (true) {
+            $substitutes[$placeholder] = match (true) {
                 (is_scalar($value) || (is_object($value) && method_exists($value, '__toString'))) => (string)$value,
                 $value instanceof DateTimeInterface => $value->format('Y-m-d H:i:s T'),
                 is_object($value) => '[Instance of ' . $value::class . ']',
@@ -137,7 +137,7 @@ class Logger implements PsrLogger
             };
         }
 
-        $message = strtr($template, $substitudes);
+        $message = strtr($template, $substitutes);
         $message .= $this->getExceptionMessage($context);
 
         return $message;

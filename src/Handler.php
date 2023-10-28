@@ -100,15 +100,24 @@ class Handler implements Middleware
             );
         }
 
+        $this->logUnmatched($exception);
+
         return $this->responseFactory->createResponse(500)
             ->withHeader('Content-Type', 'text/html')
             ->withBody($this->streamFactory->createStream('<h1>500 Internal Server Error</h1>'));
     }
 
-    public function log(string|int $logLevel, Throwable $exception): void
+    protected function log(string|int $logLevel, Throwable $exception): void
     {
         if ($this->logger) {
-            $this->logger->log($logLevel, 'Uncaught Exception:', ['exception' => $exception]);
+            $this->logger->log($logLevel, 'Matched Exception:', ['exception' => $exception]);
+        }
+    }
+
+    protected function logUnmatched(Throwable $exception): void
+    {
+        if ($this->logger) {
+            $this->logger->alert('Unmatched Exception:', ['exception' => $exception]);
         }
     }
 }
