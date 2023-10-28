@@ -1,7 +1,7 @@
 Conia Error
 ===========
 
-A Error handling PSR-15 middleware.
+A Error handling PSR-15 middleware and a PSR-3 Logger.
 
 ## Testing
 
