@@ -14,7 +14,7 @@ trait PreparesValue
     {
         return match (true) {
             // Exceptions must be first as they are Stringable
-            is_subclass_of($value, Throwable::class) => $this->getExceptionMessage(
+            is_object($value) && is_subclass_of($value, Throwable::class) => $this->getExceptionMessage(
                 $value,
                 $includeTraceback,
                 $tracebackIndent

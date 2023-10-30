@@ -77,6 +77,7 @@ class Logger implements PsrLogger
             throw new InvalidArgumentException('Unknown log level: ' . (string)$level);
         }
 
+        assert(!is_null($this->formatter));
         $message = $this->formatter->format(str_replace("\0", '', $message), $context);
         $time = date('Y-m-d H:i:s D T');
         $line = "[{$time}] {$levelLabel}: {$message}";

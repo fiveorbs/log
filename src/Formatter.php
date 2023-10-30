@@ -6,5 +6,5 @@ namespace Conia\Error;
 
 interface Formatter
 {
-    public function format(string $message, ?array $template): string;
+    public function format(string $message, ?array $context): string;
 }

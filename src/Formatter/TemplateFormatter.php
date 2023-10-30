@@ -6,6 +6,7 @@ namespace Conia\Error\Formatter;
 
 use Conia\Error\Formatter;
 
+/** @psalm-api */
 class TemplateFormatter implements Formatter
 {
     use PreparesValue;
