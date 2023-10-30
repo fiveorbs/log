@@ -149,7 +149,6 @@ class HandlerTest extends TestCase
 
         $this->assertEquals('rendered GET test message', (string)$response->getBody());
         $this->assertStringContainsString('CRITICAL: Matched Exception', $output);
-
     }
 
     #[TestDox("Render matched error while using a logger but no log level set")]
@@ -163,7 +162,6 @@ class HandlerTest extends TestCase
 
         $this->assertEquals('rendered GET test message', (string)$response->getBody());
         $this->assertEquals('', $output);
-
     }
 
     #[TestDox("Render unmatched error while using a logger")]
@@ -176,6 +174,5 @@ class HandlerTest extends TestCase
 
         $this->assertEquals('<h1>500 Internal Server Error</h1>', (string)$response->getBody());
         $this->assertStringContainsString('ALERT: Unmatched Exception', $output);
-
     }
 }

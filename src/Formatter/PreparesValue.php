@@ -28,8 +28,11 @@ trait PreparesValue
         };
     }
 
-    protected function getExceptionMessage(Throwable $exception, bool $includeTraceback, string $tracebackIndent): string
-    {
+    protected function getExceptionMessage(
+        Throwable $exception,
+        bool $includeTraceback,
+        string $tracebackIndent
+    ): string {
         $message = $exception::class . ': ' . $exception->getMessage();
 
         if ($includeTraceback) {
