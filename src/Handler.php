@@ -8,7 +8,6 @@ use ErrorException;
 use Psr\Http\Message\ResponseFactoryInterface as ResponseFactory;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use Psr\Http\Message\StreamFactoryInterface as StreamFactory;
 use Psr\Http\Server\MiddlewareInterface as Middleware;
 use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 use Psr\Log\LoggerInterface as Logger;
@@ -22,7 +21,6 @@ class Handler implements Middleware
 
     public function __construct(
         protected readonly ResponseFactory $responseFactory,
-        protected readonly StreamFactory $streamFactory,
         protected readonly ?Logger $logger = null
     ) {
         set_error_handler([$this, 'handleError'], E_ALL);
@@ -95,16 +93,17 @@ class Handler implements Middleware
         if ($renderer) {
             return $renderer->render(
                 $exception,
-                $this->responseFactory->createResponse()->withBody($this->streamFactory->createStream('')),
+                $this->responseFactory->createResponse(),
                 $request
             );
         }
 
         $this->logUnmatched($exception);
 
-        return $this->responseFactory->createResponse(500)
-            ->withHeader('Content-Type', 'text/html')
-            ->withBody($this->streamFactory->createStream('<h1>500 Internal Server Error</h1>'));
+        $response = $this->responseFactory->createResponse(500)->withHeader('Content-Type', 'text/html') ;
+        $response->getBody()->write('<h1>500 Internal Server Error</h1>');
+
+        return $response;
     }
 
     protected function log(string|int $logLevel, Throwable $exception): void

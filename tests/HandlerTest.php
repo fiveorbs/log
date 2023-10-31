@@ -21,7 +21,7 @@ class HandlerTest extends TestCase
     #[TestDox("Don't handle error level 0")]
     public function testErrorHandlerI(): void
     {
-        $handler = new Handler($this->factory, $this->factory);
+        $handler = new Handler($this->factory);
 
         $this->assertEquals(false, $handler->handleError(0, 'Handler Test'));
     }
@@ -31,14 +31,14 @@ class HandlerTest extends TestCase
     {
         $this->throws(ErrorException::class, 'Handler Test');
 
-        $handler = new Handler($this->factory, $this->factory);
+        $handler = new Handler($this->factory);
         $handler->handleError(E_WARNING, 'Handler Test');
     }
 
     #[TestDox("Render error without request")]
     public function testRenderErrorWithoutRequest(): void
     {
-        $handler = new Handler($this->factory, $this->factory);
+        $handler = new Handler($this->factory);
         $handler->render(ErrorException::class, new TestRenderer());
         $response = $handler->getResponse(new ErrorException('test message'), null);
 
@@ -48,7 +48,7 @@ class HandlerTest extends TestCase
     #[TestDox("Render error when no matching exception exists")]
     public function testRenderErrorNotMatching(): void
     {
-        $handler = new Handler($this->factory, $this->factory);
+        $handler = new Handler($this->factory);
         $handler->render(ErrorException::class, new TestRenderer());
         $response = $handler->getResponse(new Exception('test message'), null);
 
@@ -58,7 +58,7 @@ class HandlerTest extends TestCase
     #[TestDox('Add renderer exceptions as array')]
     public function testAddExceptionsAsArray(): void
     {
-        $handler = new Handler($this->factory, $this->factory);
+        $handler = new Handler($this->factory);
         $handler->render([ErrorException::class], new TestRenderer());
         $response = $handler->getResponse(new ErrorException('test message'), null);
 
@@ -68,7 +68,7 @@ class HandlerTest extends TestCase
     #[TestDox("Render error with request")]
     public function testRenderErrorWithRequest(): void
     {
-        $handler = new Handler($this->factory, $this->factory);
+        $handler = new Handler($this->factory);
         $handler->render(ErrorException::class, new TestRenderer());
         $response = $handler->getResponse(new ErrorException('test message'), $this->request());
 
@@ -78,7 +78,7 @@ class HandlerTest extends TestCase
     #[TestDox("Render error fallback")]
     public function testRenderErrorFallback(): void
     {
-        $handler = new Handler($this->factory, $this->factory);
+        $handler = new Handler($this->factory);
         $response = $handler->getResponse(new ErrorException('test message'), $this->request());
 
         $this->assertEquals('<h1>500 Internal Server Error</h1>', (string)$response->getBody());
@@ -89,7 +89,7 @@ class HandlerTest extends TestCase
     #[TestDox('Handle exception subclasses')]
     public function testResponseWithPHPExceptions(): void
     {
-        $handler = new Handler($this->factory, $this->factory);
+        $handler = new Handler($this->factory);
         $handler->render(Throwable::class, new TestRenderer());
         $response = $handler->getResponse(new ErrorException('test message'), null);
 
@@ -99,7 +99,7 @@ class HandlerTest extends TestCase
     #[TestDox('Handled by PSR-15 middleware')]
     public function testHandledByMiddleware(): void
     {
-        $handler = new Handler($this->factory, $this->factory);
+        $handler = new Handler($this->factory);
         $handler->render(Throwable::class, new TestRenderer());
         $response = $handler->process($this->request(), new class () implements RequestHandler {
             public function handle(Request $request): Response
@@ -114,7 +114,7 @@ class HandlerTest extends TestCase
     #[TestDox('Emit PHP exception unrelated to middleware')]
     public function testEmitPHPExceptions(): void
     {
-        $handler = new Handler($this->factory, $this->factory);
+        $handler = new Handler($this->factory);
 
         ob_start();
         $handler->emitException(new DivisionByZeroError('division by zero'));
@@ -127,7 +127,7 @@ class HandlerTest extends TestCase
     #[TestDox('Emit PHP exception unrelated to middleware with renderer')]
     public function testEmitPHPExceptionsWithRenderer(): void
     {
-        $handler = new Handler($this->factory, $this->factory);
+        $handler = new Handler($this->factory);
         $handler->render(Throwable::class, new TestRenderer());
 
         ob_start();
@@ -142,7 +142,7 @@ class HandlerTest extends TestCase
     public function testRenderMatchedErrorWithLogger(): void
     {
         $logger = new Logger(logfile: $this->logFile);
-        $handler = new Handler($this->factory, $this->factory, $logger);
+        $handler = new Handler($this->factory, $logger);
         $handler->render(ErrorException::class, new TestRenderer())->log(Logger::CRITICAL);
         $response = $handler->getResponse(new ErrorException('test message'), $this->request());
         $output = file_get_contents($this->logFile);
@@ -155,7 +155,7 @@ class HandlerTest extends TestCase
     public function testRenderMatchedErrorWithLoggerNoLevel(): void
     {
         $logger = new Logger(logfile: $this->logFile);
-        $handler = new Handler($this->factory, $this->factory, $logger);
+        $handler = new Handler($this->factory, $logger);
         $handler->render(ErrorException::class, new TestRenderer());
         $response = $handler->getResponse(new ErrorException('test message'), $this->request());
         $output = file_get_contents($this->logFile);
@@ -168,7 +168,7 @@ class HandlerTest extends TestCase
     public function testRenderUnmatchedErrorWithLogger(): void
     {
         $logger = new Logger(logfile: $this->logFile);
-        $handler = new Handler($this->factory, $this->factory, $logger);
+        $handler = new Handler($this->factory, $logger);
         $response = $handler->getResponse(new ErrorException('test message'), $this->request());
         $output = file_get_contents($this->logFile);
 
