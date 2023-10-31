@@ -1,16 +1,16 @@
 {
-    "name": "conia/error",
-    "description": "Error handling PSR-15 middleware",
+    "name": "conia/log",
+    "description": "A simple PSR-3 Logger",
     "type": "library",
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Conia\\Error\\": "src/"
+            "Conia\\Log\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Conia\\Error\\Tests\\": "tests/"
+            "Conia\\Log\\Tests\\": "tests/"
         }
     },
     "authors": [
@@ -20,16 +20,11 @@
         }
     ],
     "require": {
-        "psr/http-message": "^1.1 || ^2.0",
-        "psr/http-server-handler": "^1.0",
-        "psr/http-server-middleware": "^1.0",
-        "psr/http-factory": "^1.0"
+        "psr/log": "^3.0"
     },
     "require-dev": {
         "conia/development": "^1.0",
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-        "nyholm/psr7": "^1.8",
-        "nyholm/psr7-server": "^1.0",
         "phpunit/phpunit": "^10.4",
         "vimeo/psalm": "^5.15"
     },

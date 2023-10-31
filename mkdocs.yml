@@ -1,12 +1,12 @@
-site_name: Conia Error
+site_name: Conia Log
 copyright: © 2023 ebene fünf GmbH
 nav:
   - index.md
 theme:
     name: conia
-repo_url: https://github.com/coniadev/error
+repo_url: https://github.com/coniadev/log
 extra:
-    project: Http
+    project: Log
 plugins:
     - search
     - macros:
