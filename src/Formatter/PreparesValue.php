@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Conia\Error\Formatter;
+namespace Conia\Log\Formatter;
 
 use DateTimeInterface;
 use Stringable;

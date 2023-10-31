@@ -2,12 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Conia\Error\Tests;
+namespace Conia\Log\Tests;
 
-use Nyholm\Psr7\Factory\Psr17Factory;
-use Nyholm\Psr7Server\ServerRequestCreator;
 use PHPUnit\Framework\TestCase as BaseTestCase;
-use Psr\Http\Message\ServerRequestInterface;
 
 class TestCase extends BaseTestCase
 {
@@ -15,7 +12,6 @@ class TestCase extends BaseTestCase
     protected mixed $defaultLog;
     protected mixed $tempFile;
     protected mixed $logFile;
-    protected ?Psr17Factory $factory;
 
     public function setUp(): void
     {
@@ -28,8 +24,6 @@ class TestCase extends BaseTestCase
 
         $this->defaultErrorReporting = error_reporting();
         error_reporting(E_ALL);
-
-        $this->factory = new Psr17Factory();
     }
 
     public function tearDown(): void
@@ -50,8 +44,6 @@ class TestCase extends BaseTestCase
         $this->tempFile = null;
         $this->logFile = null;
 
-        $this->factory = null;
-
         if (getenv('ECHO_LOG') && $logFileContent) {
             error_log($logFileContent);
         }
@@ -64,17 +56,5 @@ class TestCase extends BaseTestCase
         if ($message) {
             $this->expectExceptionMessage($message);
         }
-    }
-
-    public function request(): ServerRequestInterface
-    {
-        $creator = new ServerRequestCreator(
-            $this->factory, // ServerRequestFactory
-            $this->factory, // UriFactory
-            $this->factory, // UploadedFileFactory
-            $this->factory  // StreamFactory
-        );
-
-        return $creator->fromGlobals();
     }
 }

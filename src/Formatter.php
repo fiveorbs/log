@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Conia\Error;
+namespace Conia\Log;
 
 interface Formatter
 {

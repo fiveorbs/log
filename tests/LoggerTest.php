@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Conia\Error\Tests;
+namespace Conia\Log\Tests;
 
-use Conia\Error\Formatter\TemplateFormatter;
-use Conia\Error\Logger;
+use Conia\Log\Formatter\TemplateFormatter;
+use Conia\Log\Logger;
 use PHPUnit\Framework\Attributes\TestDox;
 use Psr\Log\InvalidArgumentException;
 

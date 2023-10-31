@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Conia\Error\Formatter;
+namespace Conia\Log\Formatter;
 
-use Conia\Error\Formatter;
+use Conia\Log\Formatter;
 
 /** @psalm-api */
 class ContextFormatter implements Formatter

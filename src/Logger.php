@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Conia\Error;
+namespace Conia\Log;
 
-use Conia\Error\Formatter\MessageFormatter;
+use Conia\Log\Formatter\MessageFormatter;
 use Psr\Log\InvalidArgumentException;
 use Psr\Log\LoggerInterface as PsrLogger;
 use Stringable;

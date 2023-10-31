@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Conia\Error\Tests;
+namespace Conia\Log\Tests;
 
-use Conia\Error\Formatter\ContextFormatter;
-use Conia\Error\Formatter\MessageFormatter;
-use Conia\Error\Formatter\TemplateFormatter;
+use Conia\Log\Formatter\ContextFormatter;
+use Conia\Log\Formatter\MessageFormatter;
+use Conia\Log\Formatter\TemplateFormatter;
 use DateTime;
 use ErrorException;
 use PHPUnit\Framework\Attributes\TestDox;
