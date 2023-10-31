@@ -11,7 +11,7 @@ A simple PSR-3 logger using PHP's `error_log` function.
 
 ## Testing
 
-During testing PHP's `error_log` ini setting is set to a temporary file. To print the output
-to the console prepend the PHPUnit cli command with a specific env variable like the following:
+During testing, PHP's `error_log` ini setting is set to a temporary file. To print the output to
+the console, prepend a special env variable to the PHPUnit cli command, as follows:
 
     ECHO_LOG=1 phpunit
