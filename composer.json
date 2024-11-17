@@ -1,36 +1,36 @@
 {
-    "name": "conia/log",
-    "description": "A simple PSR-3 Logger",
-    "type": "library",
-    "license": "MIT",
-    "autoload": {
-        "psr-4": {
-            "Conia\\Log\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Conia\\Log\\Tests\\": "tests/"
-        }
-    },
-    "authors": [
-        {
-            "name": "ebene fünf GmbH",
-            "email": "info@ebenefuenf.de"
-        }
-    ],
-    "require": {
-        "psr/log": "^3.0"
-    },
-    "require-dev": {
-        "conia/development": "^1.0",
-        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-        "phpunit/phpunit": "^10.4",
-        "vimeo/psalm": "^5.15"
-    },
-    "config": {
-        "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true
-        }
-    }
+	"name": "fiveorbs/log",
+	"description": "A simple PSR-3 Logger",
+	"type": "library",
+	"license": "MIT",
+	"autoload": {
+		"psr-4": {
+			"FiveOrbs\\Log\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"FiveOrbs\\Log\\Tests\\": "tests/"
+		}
+	},
+	"authors": [
+		{
+			"name": "ebene fünf GmbH",
+			"email": "info@ebenefuenf.de"
+		}
+	],
+	"require": {
+		"psr/log": "^3.0"
+	},
+	"require-dev": {
+		"fiveorbs/dev": "^1.0",
+		"dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+		"phpunit/phpunit": "^10.4",
+		"vimeo/psalm": "^5.15"
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	}
 }
