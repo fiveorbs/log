@@ -1,13 +1,13 @@
-site_name: Conia Log
+site_name: FiveOrbs Log
 copyright: © 2023 ebene fünf GmbH
 nav:
   - index.md
 theme:
-    name: conia
-repo_url: https://github.com/coniadev/log
+    name: fiveorbs
+repo_url: https://github.com/fiveorbs/log
 extra:
-    project: Log
+  project: Log
 plugins:
-    - search
-    - macros:
-        module_name: docs/main
+  - search
+  - macros:
+      module_name: docs/main
