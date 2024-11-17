@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Conia\Log;
+namespace FiveOrbs\Log;
 
 interface Formatter
 {
-    public function format(string $message, ?array $context): string;
+	public function format(string $message, ?array $context): string;
 }
